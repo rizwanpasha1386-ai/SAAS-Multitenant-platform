@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { loginUser } from "../api/auth.js";
+import { useNavigate } from "react-router-dom"; // ✅ import this
 
 function Login() {
+  const navigate = useNavigate(); // ✅ initialize
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -10,6 +13,9 @@ function Login() {
       const res = await loginUser({ email, password });
       console.log(res.data);
       alert("Login successful");
+
+      navigate("/tenants"); // ✅ redirect after login
+
     } catch (err) {
       console.log(err);
       alert(err.response?.data?.message || "Login failed");

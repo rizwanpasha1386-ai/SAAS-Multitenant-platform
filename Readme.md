@@ -1,7 +1,7 @@
 📘 Multi-Tenant SaaS Project Management System
 
-A full-stack scalable SaaS application built with Node.js, Express, MongoDB, and a modern frontend.
-It supports multi-tenant architecture and role-based access control (RBAC) for managing organizations, projects, members, and tasks.
+A full-stack scalable SaaS application built with Node.js, Express, MongoDB, and React.
+It supports multi-tenant architecture with role-based access control (RBAC) for managing organizations, projects, members, and tasks.
 
 🚀 Features
 🏢 Multi-Tenant Architecture
@@ -11,21 +11,45 @@ Tenant-level access control
 🔐 Authentication & Authorization
 JWT-based authentication (stored in HTTP-only cookies)
 Secure middleware-based route protection
+Frontend + Backend auth integration:
+/auth/me for session validation
+Protected routes in React
 Role-Based Access Control (RBAC):
 Owner → Full tenant control
 Admin → Manage projects & tasks
 Member → Access assigned work
+🖥️ Frontend (React - NEW ✅)
+Built using React (Vite)
+Routing using React Router
+Axios for API communication
+Authentication flow:
+Login → Redirect to Dashboard (/tenants)
+Signup → Redirect to Login
+Home (/) → Auto-redirect based on auth state
+Protected routes using custom ProtectedRoute
+Dashboard:
+Fetch tenants from backend
+Search tenants
+Filter tenants by role (owner, admin, member)
+Dynamic UI updates based on query params
+📁 Tenant Management
+Create, update, delete tenants
+Search tenants by name
+Filter tenants by role
+Query support via:
+?search=
+?role=
+👥 Member Management
+Add/remove tenant members
+Assign roles (Owner/Admin/Member)
+Manage project members
+Search & filter members
 📁 Project Management
 Create, update, delete projects
 Assign members to projects
 Role-based access (Admin vs Member)
 Search projects by name
 Filter projects by due date
-👥 Member Management
-Add/remove tenant members
-Assign roles (Owner/Admin/Member)
-Manage project members
-Search & filter members
 📋 Task Management
 Create, update, delete tasks
 Assign/reassign tasks
@@ -44,7 +68,9 @@ $in (multiple values)
 Sorting support (asc / desc)
 ✅ Validation Layer
 Joi-based request validation
+
 Centralized validation middleware:
+
 validate(schema, 'body' | 'params' | 'query')
 🧱 Tech Stack
 Backend
@@ -55,7 +81,8 @@ JWT Authentication
 Joi Validation
 Frontend
 React (Vite)
-Axios (API communication)
+Axios
+React Router
 📁 Project Structure
 multi-tenant-saas/
 ├── backend/
@@ -65,6 +92,9 @@ multi-tenant-saas/
 │
 ├── frontend/
 │   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   ├── api/
 │   ├── public/
 │   ├── package.json
 │
@@ -79,6 +109,7 @@ multi-tenant-saas/
 🔑 Auth
 POST /api/auth/signup
 POST /api/auth/login
+GET  /api/auth/me   ← (NEW: session validation)
 🏢 Tenant
 GET    /api/tenant?search=&role=
 POST   /api/tenant
@@ -110,29 +141,28 @@ DELETE /api/task/:tenantId/projects/:projectId/tasks/:taskId
 GET    /api/task/:tenantId/projects/:projectId/my-tasks
 PATCH  /api/task/:tenantId/projects/:projectId/tasks/:taskId/updatestatus
 🔐 Roles & Permissions
-Action	             Owner   Admin	Member
-Manage Tenant	      ✅	    ❌	 ❌
-Create Project	      ❌	    ✅	 ❌
-Manage Projects	      ❌	    ✅	 ❌
-Add Members	          ❌	    ✅	 ❌
-Create Tasks	      ❌	    ✅	 ❌
-Update Tasks	      ❌	    ✅	 ❌
-Update Task Status	  ❌	    ❌	 ✅
-View Projects	      ❌	    ✅	 ✅
+Action	           Owner	Admin	Member
+Manage Tenant	    ✅	   ❌	 ❌
+Create Project	    ❌	   ✅	 ❌
+Manage Projects	    ❌	   ✅	 ❌
+Add Members	        ❌	   ✅	 ❌
+Create Tasks	    ❌	   ✅	 ❌
+Update Tasks	    ❌	   ✅	 ❌
+Update Task Status	❌	   ❌	 ✅
+View Projects	    ❌	   ✅	 ✅
 🧠 Key Design Decisions
 RESTful API Design
-Resource-based endpoints with hierarchical structure
-(tenant → project → task)
-RBAC Enforcement
-Middleware-based role validation
-Data Integrity
-Users must belong to tenant
-Tasks assigned only to project members
-Scalable Architecture
-Modular middleware system:
+
+Hierarchical resources:
+
+tenant → project → task
+RBAC Enforcement:
 auth
 isOwner, isAdmin, isMember
-validate
+Frontend Route Protection:
+ProtectedRoute
+/auth/me session validation
+Scalable Middleware Design
 ⚙️ Setup & Run
 Backend
 cd backend
@@ -144,7 +174,7 @@ npm install
 npm run dev
 🔮 Future Improvements
 API Versioning (/api/v1)
-Rate Limiting & Security (Helmet, CORS)
+Rate Limiting & Security (Helmet, CORS hardening)
 Logging (Winston / Morgan)
 Unit & Integration Testing
 Swagger API Docs
@@ -158,8 +188,9 @@ This project demonstrates:
 
 Multi-tenant SaaS architecture
 Role-Based Access Control (RBAC)
+Full-stack authentication flow
+React protected routing
 Scalable backend design
-Full-stack integration
 Real-world features like filtering, search, and task workflows
 👨‍💻 Author
 

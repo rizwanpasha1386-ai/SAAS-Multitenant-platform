@@ -78,4 +78,17 @@ async function login(req, res) {
         });
     }
 }
-module.exports={login,signup}
+
+async function GetMe(req,res) {
+    try {
+    res.status(200).json({
+      user: req.user
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
+}
+}
+module.exports={login,signup,GetMe}
