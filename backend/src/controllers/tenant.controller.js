@@ -88,6 +88,22 @@ async function displayAllTenants(req,res) {
 }
 
 //1> owner
+async function viewTenant(req,res) {
+    try {
+        const {tenantId}=req.params
+        const tenant=await TENANT.findById(tenantId)
+        .populate("createdBy","name email")
+         return res.status(200).json({
+            data:tenant
+         })
+    } catch (error) {
+        return res.status(500).json({
+            msg: "Server error",
+            error: error.message
+        });
+    }
+}
+
 async function createAdmin(req,res) {
     try {
         const { email } = req.body;
@@ -133,75 +149,76 @@ async function createAdmin(req,res) {
 }
 
 async function addTenantMembers(req, res) {
-    try {
-        const tenantId = req.params.tenantId;
-        const { members } = req.body; // array of userIds
+  try {
 
-        // 1. Validate users exist
-        const users = await USER.find({ _id: { $in: members } });
+    const tenantId = req.params.tenantId;
 
-        if (users.length !== members.length) {
-            return res.status(404).json({
-                msg: "Some users not found"
-            });
-        }
+    const { emails } = req.body;
 
-        // 3. Check existing memberships (avoid duplicates)
-        const existingMemberships = await MEMBERSHIP.find({
-            tenant: tenantId,
-            user: { $in: members }
-        });
-
-        const existingUserIds = new Set(
-            existingMemberships.map(m => m.user.toString())
-        );
-
-        // 4. Filter only new users
-        const newMembers = members.filter(
-            id => !existingUserIds.has(id.toString())
-        );
-
-        // 5. Prepare membership documents
-        const membershipDocs = newMembers.map(userId => ({
-            user: userId,
-            tenant: tenantId,
-            role: 'member'
-        }));
-
-        // 6. Insert
-        if (membershipDocs.length > 0) {
-            await MEMBERSHIP.insertMany(membershipDocs);
-        }
-
-        return res.status(200).json({
-            success: true,
-            msg: "Tenant members processed successfully",
-            addedCount: newMembers.length,
-            skipped: members.length - newMembers.length
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            msg: "Server error",
-            error: error.message
-        });
-    }
+    // FIND USERS USING EMAILS
+    const users = await USER.find({
+      email: { $in: emails }
+    });
+    if (users.length === 0) {
+   return res.status(404).json({
+      msg: "User not found"
+   });
 }
+    // EXTRACT USER IDS
+    const userIds = users.map(
+      user => user._id
+    );
 
-async function viewTenant(req,res) {
-    try {
-        const {tenantId}=req.params
-        const tenant=await TENANT.findById(tenantId)
-        .populate("createdBy","name email")
-         return res.status(200).json({
-            data:tenant
-         })
-    } catch (error) {
-        return res.status(500).json({
-            msg: "Server error",
-            error: error.message
-        });
+    // CHECK EXISTING MEMBERS
+    const existingMemberships =
+      await MEMBERSHIP.find({
+        tenant: tenantId,
+        user: { $in: userIds }
+      });
+
+    const existingUserIds = new Set(
+      existingMemberships.map(m =>
+        m.user.toString()
+      )
+    );
+
+    // FILTER NEW USERS
+    const newMembers = userIds.filter(
+      id =>
+        !existingUserIds.has(
+          id.toString()
+        )
+    );
+
+    // CREATE MEMBERSHIPS
+    const membershipDocs =
+      newMembers.map(userId => ({
+        user: userId,
+        tenant: tenantId,
+        role: "member"
+      }));
+
+    if (membershipDocs.length > 0) {
+      await MEMBERSHIP.insertMany(
+        membershipDocs
+      );
     }
+
+    return res.status(200).json({
+      success: true,
+      msg: "Members added",
+      addedCount: newMembers.length
+    });
+
+  } catch (error) {
+    console.log(error.message);
+    
+    return res.status(500).json({
+      msg: "Server error",
+      error: error.message
+    });
+
+  }
 }
 
 async function updateTenant(req,res) {
@@ -232,7 +249,7 @@ async function updateTenant(req,res) {
     if (ownerName) tenant.ownerName = ownerName;
 
     // 4️⃣ Save updated tenant
-    const updatedTenant = await TENANT.save();
+    const updatedTenant = await tenant.save();
 
     // 5️⃣ Send response
     res.status(200).json({
@@ -241,6 +258,8 @@ async function updateTenant(req,res) {
     });
 
   } catch (error) {
+    console.log(error.message);
+    
     res.status(500).json({
       success: false,
       message: error.message
@@ -370,6 +389,8 @@ async function deleteTenantMember(req,res) {
     });
 
   } catch (error) {
+    console.log(error.message);
+    
     res.status(500).json({
       success: false,
       message: error.message

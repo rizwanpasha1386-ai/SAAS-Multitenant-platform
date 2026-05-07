@@ -6,4 +6,13 @@ const tenantIdParamSchema=Joi.object({
     tenantId:objectId.required(),
 })
 
-module.exports={tenantIdParamSchema}
+const tenantMemberParamSchema =
+  Joi.object({
+    tenantId: objectId.required(),
+
+    memberId: objectId.required(),
+  });
+
+module.exports={tenantIdParamSchema,
+    tenantMemberParamSchema,
+}
