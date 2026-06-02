@@ -162,7 +162,7 @@ async function ReassignTask(req,res) {
     try {
         const id=req.params.taskId
         const {assignedTo}=req.body
-        const {projectId,tenantId}=req.params.projectId
+        const {projectId,tenantId}=req.params
 
         const user = await USER.findById(assignedTo);
         if (!user) {

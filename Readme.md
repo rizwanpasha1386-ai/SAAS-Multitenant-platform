@@ -1,197 +1,146 @@
-📘 Multi-Tenant SaaS Project Management System
+﻿# Anti Gravity Project
 
-A full-stack scalable SaaS application built with Node.js, Express, MongoDB, and React.
-It supports multi-tenant architecture with role-based access control (RBAC) for managing organizations, projects, members, and tasks.
+A multi-tenant workspace and project management application built with Node.js, Express, MongoDB, and React.
 
-🚀 Features
-🏢 Multi-Tenant Architecture
-Each tenant (organization) is fully isolated
-Users can belong to multiple tenants
-Tenant-level access control
-🔐 Authentication & Authorization
-JWT-based authentication (stored in HTTP-only cookies)
-Secure middleware-based route protection
-Frontend + Backend auth integration:
-/auth/me for session validation
-Protected routes in React
-Role-Based Access Control (RBAC):
-Owner → Full tenant control
-Admin → Manage projects & tasks
-Member → Access assigned work
-🖥️ Frontend (React - NEW ✅)
-Built using React (Vite)
-Routing using React Router
-Axios for API communication
-Authentication flow:
-Login → Redirect to Dashboard (/tenants)
-Signup → Redirect to Login
-Home (/) → Auto-redirect based on auth state
-Protected routes using custom ProtectedRoute
-Dashboard:
-Fetch tenants from backend
-Search tenants
-Filter tenants by role (owner, admin, member)
-Dynamic UI updates based on query params
-📁 Tenant Management
-Create, update, delete tenants
-Search tenants by name
-Filter tenants by role
-Query support via:
-?search=
-?role=
-👥 Member Management
-Add/remove tenant members
-Assign roles (Owner/Admin/Member)
-Manage project members
-Search & filter members
-📁 Project Management
-Create, update, delete projects
-Assign members to projects
-Role-based access (Admin vs Member)
-Search projects by name
-Filter projects by due date
-📋 Task Management
-Create, update, delete tasks
-Assign/reassign tasks
-Filter tasks by:
-Status
-Priority
-Assigned user
-Member Capabilities:
-View assigned tasks
-Update task status
-🔍 Query Features
-Search using $regex (case-insensitive)
-Filtering using:
-$gte, $lte (date range)
-$in (multiple values)
-Sorting support (asc / desc)
-✅ Validation Layer
-Joi-based request validation
+## Overview
 
-Centralized validation middleware:
+This app supports tenant-based organizations with role-based access control, workspace dashboards, project management, and member task workflows.
 
-validate(schema, 'body' | 'params' | 'query')
-🧱 Tech Stack
-Backend
-Node.js
-Express.js
-MongoDB + Mongoose
-JWT Authentication
-Joi Validation
-Frontend
-React (Vite)
-Axios
-React Router
-📁 Project Structure
-multi-tenant-saas/
-├── backend/
-│   ├── src/
-│   ├── app.js
-│   ├── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   ├── api/
-│   ├── public/
-│   ├── package.json
-│
-├── README.md
-└── .gitignore
-🌐 API Base Paths
-/api/auth
-/api/tenant
-/api/project
-/api/task
-📡 API Endpoints
-🔑 Auth
-POST /api/auth/signup
-POST /api/auth/login
-GET  /api/auth/me   ← (NEW: session validation)
-🏢 Tenant
-GET    /api/tenant?search=&role=
-POST   /api/tenant
-GET    /api/tenant/:tenantId
-PATCH  /api/tenant/:tenantId
-DELETE /api/tenant/:tenantId
-👑 Owner Actions
-POST   /api/tenant/:tenantId/createAdmin
-POST   /api/tenant/:tenantId/add-members
-GET    /api/tenant/:tenantId/members
-DELETE /api/tenant/:tenantId/members/:memberId
-PATCH  /api/tenant/:tenantId/role
-📁 Projects
-POST   /api/project/:tenantId/projects
-GET    /api/project/:tenantId/projects
-GET    /api/project/:tenantId/projects/:projectId
-PATCH  /api/project/:tenantId/projects/:projectId
-DELETE /api/project/:tenantId/projects/:projectId
-👥 Project Members
-POST   /api/project/:tenantId/projects/:projectId/members
-DELETE /api/project/:tenantId/projects/:projectId/members/:memberId
-GET    /api/project/:tenantId/projects/:projectId/members
-📋 Tasks
-POST   /api/task/:tenantId/projects/:projectId/tasks
-GET    /api/task/:tenantId/projects/:projectId/tasks
-PATCH  /api/task/:tenantId/projects/:projectId/tasks/:taskId
-DELETE /api/task/:tenantId/projects/:projectId/tasks/:taskId
-👤 Member Task Access
-GET    /api/task/:tenantId/projects/:projectId/my-tasks
-PATCH  /api/task/:tenantId/projects/:projectId/tasks/:taskId/updatestatus
-🔐 Roles & Permissions
-Action	           Owner	Admin	Member
-Manage Tenant	    ✅	   ❌	 ❌
-Create Project	    ❌	   ✅	 ❌
-Manage Projects	    ❌	   ✅	 ❌
-Add Members	        ❌	   ✅	 ❌
-Create Tasks	    ❌	   ✅	 ❌
-Update Tasks	    ❌	   ✅	 ❌
-Update Task Status	❌	   ❌	 ✅
-View Projects	    ❌	   ✅	 ✅
-🧠 Key Design Decisions
-RESTful API Design
+## Current Features
 
-Hierarchical resources:
+- Authentication
+  - Signup and login
+  - Session validation via `/api/auth/me`
+  - Protected frontend routing with `ProtectedRoute`
+- Multi-tenant workspace support
+  - Create and list tenants/workspaces
+  - Search tenants by name
+  - Filter workspaces by user role (owner/admin/member)
+- Role-based access control
+  - Owner: full tenant control and member management
+  - Admin: project and task management within a tenant
+  - Member: view assigned projects and tasks, update task status
+- Workspace pages
+  - Workspace home dashboard
+  - Workspace settings
+  - Tenant member management (owner only)
+- Project management
+  - Create, update, delete projects
+  - Assign members to projects
+  - View project details
+- Task management
+  - Create, update, delete tasks
+  - Assign tasks to users
+  - Members can update status of assigned tasks
+- Member-specific portal
+  - `GET /tenant/:tenantId/my-projects`
+  - `GET /tenant/:tenantId/my-projects/:projectId`
 
-tenant → project → task
-RBAC Enforcement:
-auth
-isOwner, isAdmin, isMember
-Frontend Route Protection:
-ProtectedRoute
-/auth/me session validation
-Scalable Middleware Design
-⚙️ Setup & Run
-Backend
+## Frontend Routes
+
+- `/` — Home
+- `/login` — Login page
+- `/signup` — Signup page
+- `/tenants` — Workspace dashboard
+- `/tenant/:tenantId` — Workspace home
+- `/tenant/:tenantId/settings` — Workspace settings
+- `/tenant/:tenantId/members` — Member management
+- `/tenant/:tenantId/projects` — Project list
+- `/tenant/:tenantId/projects/:projectId` — Project details
+- `/tenant/:tenantId/my-projects` — Member project list
+- `/tenant/:tenantId/my-projects/:projectId` — Member project details
+
+## API Summary
+
+### Auth
+- `POST /api/auth/signup`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+
+### Tenants
+- `GET /api/tenant`
+- `POST /api/tenant`
+- `GET /api/tenant/:tenantId`
+- `PATCH /api/tenant/:tenantId`
+- `DELETE /api/tenant/:tenantId`
+- `POST /api/tenant/:tenantId/createAdmin`
+- `POST /api/tenant/:tenantId/add-members`
+- `GET /api/tenant/:tenantId/members`
+- `DELETE /api/tenant/:tenantId/members/:memberId`
+- `PATCH /api/tenant/:tenantId/role`
+
+### Projects
+- `POST /api/project/:tenantId/projects`
+- `GET /api/project/:tenantId/projects`
+- `GET /api/project/:tenantId/projects/:projectId`
+- `PATCH /api/project/:tenantId/projects/:projectId`
+- `DELETE /api/project/:tenantId/projects/:projectId`
+- `POST /api/project/:tenantId/projects/:projectId/members`
+- `DELETE /api/project/:tenantId/projects/:projectId/members/:memberId`
+- `GET /api/project/:tenantId/projects/:projectId/members`
+
+### Tasks
+- `POST /api/task/:tenantId/projects/:projectId/tasks`
+- `GET /api/task/:tenantId/projects/:projectId/tasks`
+- `PATCH /api/task/:tenantId/projects/:projectId/tasks/:taskId`
+- `DELETE /api/task/:tenantId/projects/:projectId/tasks/:taskId`
+- `GET /api/task/:tenantId/projects/:projectId/my-tasks`
+- `PATCH /api/task/:tenantId/projects/:projectId/tasks/:taskId/updatestatus`
+
+## Tech Stack
+
+- Backend: Node.js, Express, MongoDB, Mongoose
+- Frontend: React, Vite, React Router, Axios
+- Validation: Joi
+- Auth: JWT via HTTP-only cookies
+
+## Project Structure
+
+```
+backend/
+  src/
+    app.js
+    controllers/
+    middlewares/
+    models/
+    routes/
+    validations/
+  package.json
+frontend/
+  src/
+    api/
+    components/
+    context/
+    pages/
+  package.json
+README.md
+```
+
+## Setup
+
+### Backend
+```bash
 cd backend
 npm install
 npm run dev
-Frontend
+```
+
+### Frontend
+```bash
 cd frontend
 npm install
 npm run dev
-🔮 Future Improvements
-API Versioning (/api/v1)
-Rate Limiting & Security (Helmet, CORS hardening)
-Logging (Winston / Morgan)
-Unit & Integration Testing
-Swagger API Docs
-Notifications 🔔
-File Uploads 📎
-Activity Logs 📜
-Redis Caching ⚡
-🏁 Conclusion
+```
 
-This project demonstrates:
+## Notes
 
-Multi-tenant SaaS architecture
-Role-Based Access Control (RBAC)
-Full-stack authentication flow
-React protected routing
-Scalable backend design
-Real-world features like filtering, search, and task workflows
-👨‍💻 Author
+- Tenant access is role-based: owners have tenant control, admins manage projects/tasks, members access assigned work.
+- Member views are separated under `/tenant/:tenantId/my-projects`.
+- Owner/Admin workflows use `/tenant/:tenantId/projects`.
 
-Rizwan Pasha
+## Suggested Improvements
+
+- Improve role-aware navigation and UI messaging
+- Add tests for backend routes and frontend flows
+- Add better error handling and notifications
+- Add API docs and request examples

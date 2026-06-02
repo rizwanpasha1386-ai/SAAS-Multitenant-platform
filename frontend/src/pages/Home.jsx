@@ -17,15 +17,31 @@ function Home() {
       .catch(() => {
         setLoading(false); // not logged in
       });
-  }, []);
+  }, [navigate]);
 
-  if (loading) return <div>Checking authentication...</div>;
+  if (loading) {
+    return (
+      <div className="welcome-container" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1>Welcome</h1>
-      <button onClick={() => navigate("/login")}>Login</button>
-      <button onClick={() => navigate("/signup")}>Signup</button>
+    <div className="auth-container welcome-container">
+      <div className="auth-header">
+        <h1 className="welcome-logo">Antigravity</h1>
+        <p className="auth-subtitle">A state-of-the-art secure multi-tenant SAAS workspace</p>
+      </div>
+
+      <div className="welcome-buttons">
+        <button className="auth-btn" onClick={() => navigate("/login")}>
+          Sign In
+        </button>
+        <button className="welcome-btn-outline" onClick={() => navigate("/signup")}>
+          Create Account
+        </button>
+      </div>
     </div>
   );
 }

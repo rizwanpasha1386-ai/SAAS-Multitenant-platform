@@ -52,7 +52,7 @@ async function displayAllTenants(req,res) {
 
     // Step 1: Build membership filter
     let membershipQuery = {
-      user: req.user.id
+      user: req.user._id || req.user.id
     };
 
     if (role) {
@@ -64,6 +64,14 @@ async function displayAllTenants(req,res) {
 
     // Extract tenant IDs
     const tenantIds = memberships.map(m => m.tenant);
+
+    // Map tenant ID to role
+    const tenantRoleMap = {};
+    memberships.forEach(m => {
+      if (m.tenant) {
+        tenantRoleMap[m.tenant.toString()] = m.role;
+      }
+    });
 
     // Step 3: Build tenant query
     let tenantQuery = {
@@ -77,9 +85,16 @@ async function displayAllTenants(req,res) {
     // Step 4: Fetch tenants
     const tenants = await TENANT.find(tenantQuery);
 
+    // Step 5: Merge role information into tenant objects
+    const tenantsWithRoles = tenants.map(tenant => {
+      const tenantObj = tenant.toObject();
+      tenantObj.role = tenantRoleMap[tenant._id.toString()] || 'member';
+      return tenantObj;
+    });
+
     res.json({
       success: true,
-      data: tenants
+      data: tenantsWithRoles
     });
 
   } catch (err) {
