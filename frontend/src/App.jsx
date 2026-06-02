@@ -37,19 +37,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-<<<<<<< HEAD
 
-        {/* SINGLE TENANT PAGE */}
-        <Route
-          path="/tenant/:tenantId"
-          element={
-            <ProtectedRoute>
-              <TenantPage />
-            </ProtectedRoute>
-          }
-        />
-
-=======
         {/* Workspace routes */}
         <Route
           path="/tenant/:tenantId/*"
@@ -67,8 +55,7 @@ function App() {
           <Route path="my-projects" element={<MemberProjects />} />
           <Route path="my-projects/:projectId" element={<MemberProjectDetails />} />
         </Route>
->>>>>>> 08e81da (feat(frontend): add tenant workspace routing, member project/task portals, and project/task API integration)
-      </Routes>
+  </Routes>
     </BrowserRouter>
   );
 }
