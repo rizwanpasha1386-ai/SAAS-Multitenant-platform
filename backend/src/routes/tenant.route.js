@@ -2,7 +2,7 @@ const express=require('express')
 
 const router=express.Router()
 const {auth}=require('../middlewares/auth')
-const {isAdmin,isMember,isOwner}=require('../middlewares/roles.middleware')
+const {isAdmin,isMember,isOwner,isTenantMember}=require('../middlewares/roles.middleware')
 const {createTenant,displayAllTenants,createAdmin,addTenantMembers,updateMemberRole,getTenantMembers,deleteTenantMember,viewTenant,updateTenant,deleteTenant}=require('../controllers/tenant.controller')
 const {validate}=require('../middlewares/validate')
 
@@ -14,7 +14,7 @@ router.post('/',createTenant)
 
 //owner
 
-router.get('/:tenantId',isOwner,validate(tenantIdParamSchema,'params'),viewTenant)
+router.get('/:tenantId',isTenantMember,validate(tenantIdParamSchema,'params'),viewTenant)
 router.patch('/:tenantId',isOwner,validate(tenantIdParamSchema,'params'),updateTenant)
 router.delete('/:tenantId',isOwner,validate(tenantIdParamSchema,'params'),deleteTenant)
 router.post('/:tenantId/createAdmin',isOwner,validate(tenantIdParamSchema,'params'),createAdmin)

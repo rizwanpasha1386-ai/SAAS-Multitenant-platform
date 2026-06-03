@@ -28,11 +28,22 @@ async function isMember(req,res,next) {
         user:userID,
         tenant:tenantId
     })
-    console.log(membership);
     
     if(!membership)return res.status(403).json({msg:"Not authorized"})
     if(membership.role!=="member")return res.status(403).json({msg:"Not authorized"})
     next()
 }
 
-module.exports={isAdmin,isOwner,isMember}
+async function isTenantMember(req,res,next) {
+    const tenantId=req.params.tenantId
+    const userID=req.user._id
+    const membership=await MEMBERSHIP.findOne({
+        user:userID,
+        tenant:tenantId
+    })
+
+    if(!membership)return res.status(403).json({msg:"Not authorized"})
+    next()
+}
+
+module.exports={isAdmin,isOwner,isMember,isTenantMember}
