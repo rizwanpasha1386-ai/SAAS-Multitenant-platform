@@ -8,7 +8,8 @@ const {validate}=require('../middlewares/validate')
 
 const {createProject,getAllProjects,getProjectById,updateProject,deleteProject,
     addProjectMembers,RemoveMember,GetAllMembers,
-GetMyProjects,GetAProject}=require('../controllers/project.controller')
+GetMyProjects,GetAProject,getProjectMessages,
+  getProjectAnnouncements,}=require('../controllers/project.controller')
 
 router.use(auth)
 //2>admin
@@ -26,5 +27,10 @@ router.get('/:tenantId/projects/:projectId/members',isAdmin,IsProjectOwner,valid
 //member access
 router.get('/:tenantId/my-projects',isMember,GetMyProjects)     //GET /my-projects?search=ai&dueDate=2026-05-01
 router.get('/:tenantId/my-projects/:projectId',isMember,IsProjectMember,validate(projectIdParamSchema,'params'),GetAProject)
+
+//message and announcement
+router.get('/:projectId/messages',IsProjectMember,getProjectMessages)
+router.get('/:projectId/announcements',IsProjectMember,getProjectAnnouncements)
+
 
 module.exports=router

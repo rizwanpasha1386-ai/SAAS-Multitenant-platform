@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { socket } from "./socket";
+import { useEffect } from "react";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -17,6 +19,20 @@ import MemberProjects from "./pages/MemberProjects";
 import MemberProjectDetails from "./pages/MemberProjectDetails";
 
 function App() {
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("React socket connected:", socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.log("Socket connection error:", err.message);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("connect_error");
+    };
+  }, []);
   return (
     <BrowserRouter>
       <Routes>
