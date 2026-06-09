@@ -8,7 +8,7 @@ export default function MemberProjectDetails() {
   const { tenantId } = useWorkspace();
   const { projectId } = useParams();
   const navigate = useNavigate();
-
+  const [activeTab,setActiveTab]=useState("tasks")
   const [project, setProject] = useState(null);
   const [projectLoading, setProjectLoading] = useState(true);
   const [projectError, setProjectError] = useState("");
@@ -112,6 +112,11 @@ export default function MemberProjectDetails() {
     }
   };
 
+  const handleOpenChat = () => {
+    setActiveTab("chat");
+    navigate(`/tenant/${tenantId}/projects/${projectId}/chat`);
+  };
+
   if (projectLoading) {
     return (
       <div className="ws-page" style={{ display: "flex", justifyContent: "center", padding: 40 }}>
@@ -142,7 +147,26 @@ export default function MemberProjectDetails() {
   }
 
   return (
+    
     <div className="ws-page">
+      <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
+  <button
+    className="ws-button"
+    onClick={() => setActiveTab("tasks")}
+    style={{ opacity: activeTab === "tasks" ? 1 : 0.7 }}
+  >
+    Tasks
+  </button>
+
+  <button
+    className="ws-button"
+    onClick={handleOpenChat}
+    style={{ opacity: activeTab === "chat" ? 1 : 0.7 }}
+  >
+    Chat
+  </button>
+</div>
+
       <div className="ws-page-header" style={{ justifyContent: "space-between" }}>
         <div>
           <h1 className="ws-page-title">{project.name}</h1>

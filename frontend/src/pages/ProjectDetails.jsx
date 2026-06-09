@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useWorkspace } from "../context/WorkspaceContext";
 import {
   getProjectById,
@@ -19,6 +19,7 @@ import {
 export default function ProjectDetails() {
   const { tenantId, workspace } = useWorkspace();
   const { projectId } = useParams();
+  const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
   const [members, setMembers] = useState([]);
@@ -49,6 +50,11 @@ export default function ProjectDetails() {
   const [taskActionLoading, setTaskActionLoading] = useState(false);
   const [taskSuccess, setTaskSuccess] = useState("");
   const [taskError, setTaskError] = useState("");
+  
+  const handleOpenGroupDiscussion = () => {
+  setActiveTab("groupDiscussion");
+  navigate(`/tenant/${tenantId}/projects/${projectId}/chat`);
+  };
 
   useEffect(() => {
     const loadProject = async () => {
@@ -369,6 +375,13 @@ export default function ProjectDetails() {
         >
           Tasks
         </button>
+        <button
+        className="ws-button"
+        onClick={handleOpenGroupDiscussion}
+        style={{ opacity: activeTab === "groupDiscussion" ? 1 : 0.7 }}
+        >
+  Group Discussion
+</button>
       </div>
 
       {activeTab === "project" ? (

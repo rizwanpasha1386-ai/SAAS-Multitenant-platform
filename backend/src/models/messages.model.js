@@ -8,12 +8,12 @@ const messagesschema=new mongoose.Schema({
     },
      projectId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
+      ref: "projects",
       required: true,
     },
      sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "users",
       required: true,
     },
     message: {

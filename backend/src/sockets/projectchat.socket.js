@@ -25,7 +25,7 @@ const projectChatSocket = (io, socket) => {
       }
 
       socket.join(projectId);
-
+      console.log(`User ${socket.user.name} joined project room ${projectId}`);
       socket.emit("project-room-joined", {
         projectId,
         message: "Joined project room successfully",
@@ -40,6 +40,8 @@ const projectChatSocket = (io, socket) => {
       const project = await Project.findById(projectId);
 
       if (!project) {
+        console.log("Project not found");
+        
         return socket.emit("error-message", "Project not found");
       }
 
@@ -50,6 +52,7 @@ const projectChatSocket = (io, socket) => {
       const isOwner = project.createdBy.toString() === socket.user._id.toString();
 
       if (!isMember && !isOwner) {
+        console.log("User not allowed to send message in this project");
         return socket.emit(
           "error-message",
           "You are not allowed to send message in this project"
@@ -71,6 +74,7 @@ const projectChatSocket = (io, socket) => {
 
       io.to(projectId).emit("receive-project-message", populatedMessage);
     } catch (error) {
+      console.log("Error sending project message:", error);
       socket.emit("error-message", "Failed to send project message");
     }
   });
