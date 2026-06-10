@@ -18,6 +18,7 @@ import ProjectDetails from "./pages/ProjectDetails";
 import MemberProjects from "./pages/MemberProjects";
 import MemberProjectDetails from "./pages/MemberProjectDetails";
 import ProjectChat from "./pages/ProjectChat";
+import Announcement from "./pages/Announcement";
 
 function App() {
   useEffect(() => {
@@ -72,6 +73,7 @@ function App() {
           <Route path="my-projects" element={<MemberProjects />} />
           <Route path="my-projects/:projectId" element={<MemberProjectDetails />} />
           <Route path="projects/:projectId/chat" element={<ProjectChat />} />
+          <Route path="projects/:projectId/announcements" element={<Announcement />} />
         </Route>
   </Routes>
     </BrowserRouter>

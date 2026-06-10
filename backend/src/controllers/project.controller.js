@@ -355,6 +355,7 @@ const getProjectMessages=async(req,res)=>{
 }
 const getProjectAnnouncements =async(req,res)=>{
      try{
+        const { projectId } = req.params;
         const announcements = await MESSAGES.find({
         projectId,
         type: "announcement",
@@ -368,6 +369,7 @@ const getProjectAnnouncements =async(req,res)=>{
         data: announcements,
         });
      }catch (error) {
+        console.log("Error fetching announcements:", error);
         res.status(500).json({
         success: false,
         message: "Failed to fetch project announcements",

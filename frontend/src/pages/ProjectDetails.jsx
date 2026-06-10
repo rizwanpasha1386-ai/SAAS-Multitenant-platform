@@ -380,8 +380,18 @@ export default function ProjectDetails() {
         onClick={handleOpenGroupDiscussion}
         style={{ opacity: activeTab === "groupDiscussion" ? 1 : 0.7 }}
         >
-  Group Discussion
-</button>
+        Chat
+      </button>
+        <button
+      className="ws-button"
+      onClick={() => {
+        setActiveTab("announcement");
+        navigate(`/tenant/${tenantId}/projects/${projectId}/announcements`);
+      }}
+      style={{ opacity: activeTab === "announcement" ? 1 : 0.7 }}
+    >
+      Announcements
+    </button>
       </div>
 
       {activeTab === "project" ? (

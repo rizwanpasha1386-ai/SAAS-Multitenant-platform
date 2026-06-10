@@ -117,6 +117,11 @@ export default function MemberProjectDetails() {
     navigate(`/tenant/${tenantId}/projects/${projectId}/chat`);
   };
 
+  const handleOpenAnnouncements=()=>{
+    setActiveTab("announcement")
+    navigate(`/tenant/${tenantId}/projects/${projectId}/announcements`)
+  }
+
   if (projectLoading) {
     return (
       <div className="ws-page" style={{ display: "flex", justifyContent: "center", padding: 40 }}>
@@ -164,6 +169,14 @@ export default function MemberProjectDetails() {
     style={{ opacity: activeTab === "chat" ? 1 : 0.7 }}
   >
     Chat
+  </button>
+
+  <button
+    className="ws-button"
+    onClick={handleOpenAnnouncements}
+    style={{ opacity: activeTab === "announcement" ? 1 : 0.7 }}
+  >
+    Announcements
   </button>
 </div>
 
