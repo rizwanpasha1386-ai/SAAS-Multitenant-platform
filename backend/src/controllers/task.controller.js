@@ -3,6 +3,38 @@ const MEMBERSHIP=require('../models/membership.model')
 const PROJECT=require('../models/project.model')
 const TASK=require('../models/tasks.model')
 
+const {
+  getCache,
+  setCache,
+  deleteCache,
+  deleteMultipleCacheKeys,
+} = require("../services/cache.service");
+const cacheKeys = require("../services/cache-key.services");
+
+async function invalidateTaskCaches(tenantId, projectId, taskId, userId) {
+  const keys = [];
+
+  if (tenantId && projectId) {
+    keys.push(
+      cacheKeys.taskList(tenantId, projectId, "*", "*", "*", "*"),
+      cacheKeys.myTaskList(tenantId, projectId, "*", "*", "*", "*", "*", "*"),
+      cacheKeys.task(tenantId, projectId, taskId)
+    );
+  }
+
+  if (taskId && tenantId && projectId) {
+    keys.push(cacheKeys.task(tenantId, projectId, taskId));
+  }
+
+  if (keys.length > 0) {
+    await deleteMultipleCacheKeys(keys.filter(Boolean));
+  }
+
+  if (userId && tenantId && projectId) {
+    await deleteCache(cacheKeys.myTaskList(tenantId, projectId, userId, "*", "*", "*", "*", "*"));
+  }
+}
+
 //admin - tasks
 async function CreateTask(req,res) {
     try {
@@ -10,8 +42,7 @@ async function CreateTask(req,res) {
         const tenantId=req.params.tenantId
         const {title,description,priority,dueDate,assignedTo}=req.body
     if(!title)
-         return res.status(400).json({ msg: "Title required" });
-        
+         return res.status(400).json({ msg: "Title required" });  
     const project = await PROJECT.findById(projectId);
 
     let Assignedto=null
@@ -38,6 +69,8 @@ async function CreateTask(req,res) {
         tenantId:tenantId
     })
 
+    await invalidateTaskCaches(tenantId, projectId, task._id, Assignedto);
+
     return res.json({msg:"Task added successfully",
         task:task
     })
@@ -52,12 +85,22 @@ async function GetAllTasks(req, res) {
   try {
     const { projectId, tenantId } = req.params;
 
+    const { status, assignedTo, priority, search } = req.query;
+    const cacheKey = cacheKeys.taskList(tenantId, projectId, status, assignedTo, priority, search);
+    const cachedTasks = await getCache(cacheKey);
+
+    if (cachedTasks) {
+      return res.status(200).json({
+        success: true,
+        count: cachedTasks.length,
+        data: cachedTasks
+      });
+    }
+
     let filter = {
       project: projectId,
       tenantId: tenantId
     };
-
-    const { status, assignedTo, priority, search } = req.query;
 
     if (status) {
       filter.status = status;
@@ -81,6 +124,8 @@ async function GetAllTasks(req, res) {
     const tasks = await TASK.find(filter)
       .select("title description status priority createdAt assignedTo")
       .populate("assignedTo", "name email");
+
+    await setCache(cacheKey, tasks);
 
     return res.status(200).json({
       success: true,
@@ -139,6 +184,8 @@ async function UpdateTask(req,res) {
 
         if(!task)
             return res.status(404).json({ msg: "Task not found" });
+
+        await invalidateTaskCaches(tenantId, projectId, task._id, task.assignedTo);
        
         return res.status(200).json({
         msg: "Task updated successfully",
@@ -152,6 +199,7 @@ async function UpdateTask(req,res) {
 async function DeleteTask(req,res) {
     try {
         const task=await TASK.findByIdAndDelete(req.params.taskId)
+        await invalidateTaskCaches(req.params.tenantId, req.params.projectId, req.params.taskId, task?.assignedTo);
         return res.status(200).json({msg:"Task deleted successfully"})
     } catch (error) {
      return res.status(500).json({msg:"Server error"})   
@@ -186,6 +234,8 @@ async function ReassignTask(req,res) {
         if(!task)
             return res.status(404).json({msg:"Task not found"})
 
+        await invalidateTaskCaches(tenantId, projectId, task._id, task.assignedTo);
+
         return res.status(200).json({msg:"Reassigned successfully",
             task:task
         })
@@ -202,16 +252,25 @@ async function getMyTasks(req, res) {
     const { projectId, tenantId } = req.params;
     const userId = req.user._id;
 
+    const { status, priority, startDate, endDate, search, sortBy, order } = req.query;
+    const cacheKey = cacheKeys.myTaskList(tenantId, projectId, userId, status, priority, search, sortBy, order);
+    const cachedTasks = await getCache(cacheKey);
+
+    if (cachedTasks) {
+      return res.status(200).json({
+        success: true,
+        count: cachedTasks.length,
+        data: cachedTasks
+      });
+    }
+
     // 🔹 Sorting
-    const sortBy = req.query.sortBy || "createdAt";
-    const order = req.query.order === "asc" ? 1 : -1;
+    const sortByValue = sortBy || "createdAt";
+    const sortOrder = req.query.order === "asc" ? 1 : -1;
 
     const sortOptions = {
-      [sortBy]: order
+      [sortByValue]: sortOrder
     };
-
-    // 🔹 Filtering
-    const { status, priority, startDate, endDate, search } = req.query;
 
     let filter = {
       project: projectId,
@@ -242,6 +301,8 @@ async function getMyTasks(req, res) {
       .select("title description status priority createdAt")
       .sort(sortOptions);
 
+    await setCache(cacheKey, tasks);
+
     return res.status(200).json({
       success: true,
       count: tasks.length,
@@ -262,6 +323,16 @@ async function getATask(req,res) {
         const { projectId, taskId ,tenantId} = req.params;
         const userId = req.user._id;
 
+        const cacheKey = cacheKeys.task(tenantId, projectId, taskId);
+        const cachedTask = await getCache(cacheKey);
+
+        if (cachedTask) {
+            return res.status(200).json({
+                success: true,
+                task: cachedTask
+            });
+        }
+
         const task = await TASK.findOne({
             _id: taskId,
             project: projectId,      // ✅ must belong to project
@@ -276,6 +347,8 @@ async function getATask(req,res) {
                 msg: "Task not found or access denied"
             });
         }
+
+        await setCache(cacheKey, task);
 
         return res.status(200).json({
             success: true,
@@ -315,6 +388,8 @@ async function updateStatus(req, res) {
         task.completedAt = status === "done" ? new Date() : null;
 
         await task.save();
+
+        await invalidateTaskCaches(tenantId, projectId, task._id, userId);
 
         return res.status(200).json({
             success: true,

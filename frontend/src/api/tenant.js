@@ -30,8 +30,8 @@ export const getMembers = (tenantId, params = {}) =>
   API.get(`/tenant/${tenantId}/members`, { params });
 
 // POST /api/tenant/:tenantId/add-members  → addTenantMembers
-export const addMembers = (tenantId, members) =>
-  API.post(`/tenant/${tenantId}/add-members`, { members });
+export const addMembers = (tenantId, emails) =>
+  API.post(`/tenant/${tenantId}/add-members`, { emails });
 
 // DELETE /api/tenant/:tenantId/members/:memberId  → deleteTenantMember
 export const deleteMember = (tenantId, memberId) =>

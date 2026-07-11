@@ -4,6 +4,36 @@ const PROJECT=require('../models/project.model')
 const TASK=require('../models/tasks.model')
 const TENANT=require('../models/tenant.model')
 
+const {
+  getCache,
+  setCache,
+  deleteCache,
+  deleteMultipleCacheKeys,
+  deleteCacheByPattern,
+} = require("../services/cache.service");
+const cacheKeys = require("../services/cache-key.services");
+
+async function invalidateTenantCaches(tenantId, userId) {
+  const exactKeys = [];
+
+  if (tenantId) {
+    exactKeys.push(cacheKeys.tenant(tenantId));
+    exactKeys.push(cacheKeys.tenantMembers(tenantId, "", "", ""));
+  }
+
+  if (exactKeys.length > 0) {
+    await deleteMultipleCacheKeys(exactKeys);
+  }
+
+  if (userId) {
+    await deleteCacheByPattern(cacheKeys.tenantList(userId, "*", "*", "*"));
+  }
+
+  if (tenantId) {
+    await deleteCacheByPattern(cacheKeys.tenantMembers(tenantId, "*", "*", "*"));
+  }
+}
+
 async function createTenant(req, res) {
     try {
         const { name, ownerName } = req.body;
@@ -33,6 +63,8 @@ async function createTenant(req, res) {
             role:"owner"
         })
 
+        await invalidateTenantCaches(tenant._id, userId);
+
         res.status(201).json({
             msg: "Tenant created successfully",
             tenant
@@ -48,11 +80,22 @@ async function createTenant(req, res) {
 
 async function displayAllTenants(req,res) {
     try {
-    const { search, role } = req.query;
+    const { search, role, sort } = req.query;
+    const userId = req.user._id || req.user.id;
+
+    const cacheKey = cacheKeys.tenantList(userId, search, role, sort);
+    const cachedTenants = await getCache(cacheKey);
+
+    if (cachedTenants) {
+      return res.status(200).json({
+        success: true,
+        data: cachedTenants
+      });
+    }
 
     // Step 1: Build membership filter
     let membershipQuery = {
-      user: req.user._id || req.user.id
+      user: userId
     };
 
     if (role) {
@@ -92,6 +135,8 @@ async function displayAllTenants(req,res) {
       return tenantObj;
     });
 
+    await setCache(cacheKey, tenantsWithRoles);
+
     res.json({
       success: true,
       data: tenantsWithRoles
@@ -106,8 +151,22 @@ async function displayAllTenants(req,res) {
 async function viewTenant(req,res) {
     try {
         const {tenantId}=req.params
-        const tenant=await TENANT.findById(tenantId)
+        const cacheKey = cacheKeys.tenant(tenantId);
+        const cachedTenant = await getCache(cacheKey);
+
+        if (cachedTenant) {
+            return res.status(200).json({
+                data: cachedTenant
+            })
+        }
+
+        const tenant = req.tenant || await TENANT.findById(tenantId)
         .populate("createdBy","name email")
+
+        if (tenant) {
+            await setCache(cacheKey, tenant);
+        }
+
          return res.status(200).json({
             data:tenant
          })
@@ -150,6 +209,8 @@ async function createAdmin(req,res) {
             role: "admin"
         });
 
+        await invalidateTenantCaches(tenantId, req.user?._id || req.user?.id);
+
         return res.status(201).json({
             msg: "Admin created successfully",
             data: newAdmin
@@ -169,12 +230,13 @@ async function addTenantMembers(req, res) {
     const tenantId = req.params.tenantId;
 
     const { emails } = req.body;
-
+    console.log("NOT found2222")
     // FIND USERS USING EMAILS
     const users = await USER.find({
       email: { $in: emails }
     });
     if (users.length === 0) {
+      console.log("NOT found")
    return res.status(404).json({
       msg: "User not found"
    });
@@ -218,6 +280,8 @@ async function addTenantMembers(req, res) {
         membershipDocs
       );
     }
+
+    await invalidateTenantCaches(tenantId, req.user?._id || req.user?.id);
 
     return res.status(200).json({
       success: true,
@@ -266,6 +330,8 @@ async function updateTenant(req,res) {
     // 4️⃣ Save updated tenant
     const updatedTenant = await tenant.save();
 
+    await invalidateTenantCaches(tenantId, req.user?._id || req.user?.id);
+
     // 5️⃣ Send response
     res.status(200).json({
       success: true,
@@ -309,6 +375,8 @@ async function deleteTenant(req,res) {
     // 6️⃣ Delete tenant
     await TENANT.findByIdAndDelete(tenantId);
 
+    await invalidateTenantCaches(tenantId, req.user?._id || req.user?.id);
+
     res.status(200).json({
       success: true,
       message: "Tenant and related data deleted"
@@ -323,6 +391,17 @@ async function getTenantMembers(req, res) {
   try {
     const { tenantId } = req.params;
     const { role, search, sort = "createdAt" } = req.query;
+
+    const cacheKey = cacheKeys.tenantMembers(tenantId, search, role, sort);
+    const cachedMembers = await getCache(cacheKey);
+
+    if (cachedMembers) {
+      return res.status(200).json({
+        success: true,
+        count: cachedMembers.length,
+        data: cachedMembers
+      });
+    }
 
     let filter = { tenant: tenantId };
 
@@ -355,6 +434,8 @@ async function getTenantMembers(req, res) {
         message: "No members found"
       });
     }
+
+    await setCache(cacheKey, filteredMembers);
 
     res.status(200).json({
       success: true,
@@ -397,6 +478,8 @@ async function deleteTenantMember(req,res) {
 
     // 3️⃣ Delete membership
     await membership.deleteOne();
+
+    await invalidateTenantCaches(tenantId, req.user?._id || req.user?.id);
 
     res.status(200).json({
       success: true,
@@ -465,6 +548,8 @@ async function updateMemberRole(req,res) {
         }
       );
     }
+
+    await invalidateTenantCaches(tenantId, req.user?._id || req.user?.id);
 
     res.status(200).json({
       success: true,

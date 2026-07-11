@@ -67,11 +67,11 @@ export default function MemberManagement() {
   // ── Add Members ────────────────────────────────────
   const handleAddMembers = async (e) => {
     e.preventDefault();
-    const ids = addUserIds.split(",").map((s) => s.trim()).filter(Boolean);
-    if (!ids.length) { setAddError("Enter at least one User ID."); return; }
+    const emails = addUserIds.split(",").map((s) => s.trim()).filter(Boolean);
+    if (!emails.length) { setAddError("Enter at least one User ID."); return; }
     setAddLoading(true); setAddError(""); setAddSuccess("");
     try {
-      await addMembers(tenantId, ids);
+      await addMembers(tenantId, emails);
       setAddSuccess("Members added successfully!");
       setAddUserIds("");
       fetchMembers();

@@ -26,7 +26,6 @@ async function IsProjectMember(req,res,next) {
         
         next()
     } catch (error) {
-        console.log(error)
         
         return res.status(500).json({msg:"Server error"})
     }
@@ -48,7 +47,6 @@ async function IsProjectOwner(req,res,next) {
              return res.status(403).json({ msg: "Forbidden: Not project owner" });
 
         req.project = project;
-        console.log(req.project);
         
         next()
     } catch (error) {
