@@ -3,7 +3,7 @@ const mongoose=require('mongoose')
 
 async function connectDB() {
     try {
-        await mongoose.connect(process.env.DB_url)
+        await mongoose.connect(process.env.DB_url||'mongodb://127.0.0.1:27017/Task_Manager')
         console.log("Mongodb connected successfully")
     } catch (error) {
         console.log("Mongodb connection error ",error)
