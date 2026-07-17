@@ -33,7 +33,7 @@ export function WorkspaceProvider({ children }) {
         setWorkspace(wsRes.data.data);
 
         // b) Get logged-in user info (already available via /api/auth/me)
-        const meRes = await axios.get("http://localhost:8000/api/auth/me", {
+        const meRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
           withCredentials: true,
         });
         const me = meRes.data.user;
@@ -41,7 +41,7 @@ export function WorkspaceProvider({ children }) {
 
         // c) Determine the user's role in THIS tenant from the tenants list
         //    We use /api/tenant/ with no filters to get all memberships + roles
-        const allRes = await axios.get("http://localhost:8000/api/tenant", {
+        const allRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/tenant`, {
           withCredentials: true,
         });
         const match = allRes.data.data.find(

@@ -6,11 +6,12 @@ function ProtectedRoute({ children }) {
   const [isAuth, setIsAuth] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/auth/me", {
-      withCredentials: true,
-    })
-    .then(() => setIsAuth(true))
-    .catch(() => setIsAuth(false));
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+        withCredentials: true,
+      })
+      .then(() => setIsAuth(true))
+      .catch(() => setIsAuth(false));
   }, []);
 
   if (isAuth === null) return <div>Loading...</div>;

@@ -1,14 +1,15 @@
 import axios from "axios";
 
-export const getMessages = async (
-  projectId
-) => {
+const API_URL = import.meta.env.VITE_API_URL;
+
+export const getMessages = async (projectId) => {
   const res = await axios.get(
-    `http://localhost:8000/api/project/${projectId}/messages`,
+    `${API_URL}/api/project/${projectId}/messages`,
     {
       withCredentials: true,
     }
   );
+
   console.log(res.data);
   return res.data.data;
 };

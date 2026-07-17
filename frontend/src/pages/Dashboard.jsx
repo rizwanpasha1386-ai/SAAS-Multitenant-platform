@@ -21,7 +21,7 @@ function Dashboard() {
       setLoading(true);
       setError("");
 
-      const res = await axios.get("http://localhost:8000/api/tenant", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tenant`, {
         params: {
           search: search || undefined,
           role: role || undefined,
@@ -55,7 +55,7 @@ function Dashboard() {
       setSuccess("");
 
       const res = await axios.post(
-        "http://localhost:8000/api/tenant",
+        `${import.meta.env.VITE_API_URL}/api/tenant`,
         {
           name: tenantName,
           ownerName: ownerName,

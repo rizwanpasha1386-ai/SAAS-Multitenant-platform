@@ -8,7 +8,7 @@ function Home() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/auth/me", {
+      .get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
         withCredentials: true,
       })
       .then(() => {
